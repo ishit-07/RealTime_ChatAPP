@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
             default:"",
         }
     },
+    // timestamps is used for to show when the message is createdAt
     {
         timestamps: true
     }

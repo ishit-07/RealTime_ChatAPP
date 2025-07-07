@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../lib/jwt.provider.js";
+import cloudinary from "../lib/cloudinary.js";
 
 export const signUp = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -97,12 +98,36 @@ export const logOut = async (req, res) => {
 };
 
 
-
+// this is user for profile update
 export const updatePorfile = async (req,res) => {
-
   try {
-    
+    const {profilePic} = req.body;
+    const userId = req.user._id;
+
+    if(!profilePic){
+      return res.status(400).json({message: "Profile Pic is required"});
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+
+    // By default, findOneAndUpdate() returns the document as it was before update was applied. If you set new: true, findOneAndUpdate() will instead give you the object after update was applied
+    const updatedUser = await User.findOneAndUpdate(userId, {profilePic: uploadResponse.secure_url}, {new: true});
+
+    res.status(200).json(updatedUser);
+
   } catch (error) {
-    
+    console.log("Error in update Profile", error);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+}
+
+// this fucntion is used for when the user is authenticated we will show the data to the user (frontend)
+
+export const checkAuth = (req,res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.log("Error in CheckAuth controller",error.message);
+    res.status(500).json({message: "Internal Server Error"});
   }
 }

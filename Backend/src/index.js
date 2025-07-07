@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 // we have to put the file extenstion for the local file because we are using type: module in the package.json
 import authRoutes from "../src/routes/auth.routes.js";
+import messageRoutes from "../src/routes/message.routes.js";
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/message", messageRoutes);
 
 app.listen(PORT , () => {
     console.log("Server is running on port: "+ PORT);

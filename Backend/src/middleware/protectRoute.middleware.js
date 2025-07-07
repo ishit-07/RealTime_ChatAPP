@@ -1,7 +1,9 @@
 import jwt, { decode } from "jsonwebtoken";
 import User from "../models/user.model.js"
 
-// next is used for calling the other function update profile
+// 
+
+// next is used for calling the other function like updateProfile
 export const protectRoute = async (req,res,next) => {
   try {
 
