@@ -1,26 +1,39 @@
 import { create } from "zustand";
-import { axiosInstance } from "../lib/axios";
-
+import { axiosInstance } from "../lib/axios.js";
+import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
-    authUser: null,
-    isSigningUp: false,
-    isLoggingIn: false,
-    isUpdatingProfile: false,
+  authUser: null,
+  isSigningUp: false,
+  isLoggingIn: false,
+  isUpdatingProfile: false,
 
-    // this is for the user is authenticated or not
-    isCheckingAuth: true,
+  isCheckingAuth: true,
 
-    checkAuth: async () => {
-        try {
-            const res = await axiosInstance.get("/auth/check");
+  checkAuth: async () => {
+    try {
+      const res = await axiosInstance.get("/auth/check");
 
-            set({authUser: res.data});
-        } catch (error) {
-            set({authUser: null});
-        }finally{
-            set({isCheckingAuth:false});
-        }
-    },
+      set({ authUser: res.data });
+    } catch (error) {
+      console.log("Error in checkAuth:", error);
+      set({ authUser: null });
+    } finally {
+      set({ isCheckingAuth: false });
+    }
+  },
 
+  // this is also for loading
+  signUp: async (data) => {
+    set({ isSigningUp: true });
+    try {
+      const res = await axiosInstance.post("/auth/signup", data);
+      set({ authUser: res.data });
+      toast.success("Account Created Successfully");
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isSigningUp: false });
+    }
+  },
 }));
