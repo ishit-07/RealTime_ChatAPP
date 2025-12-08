@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { THEMES } from "../Constants";
 import { useThemeStore } from "../Store/useThemeStore";
 import { Send } from "lucide-react";
@@ -14,9 +17,15 @@ const PREVIEW_MESSAGES = [
 const SettingsPage = () => {
   const { theme, setTheme } = useThemeStore();
 
+  useEffect(() => {
+    // Apply theme to the root html element
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
   return (
     <div className="h-screen container mx-auto px-4 pt-20 max-w-5xl">
       <div className="space-y-6">
+        {/* Theme Selector */}
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold">Theme</h2>
           <p className="text-sm text-base-content/70">
@@ -28,12 +37,11 @@ const SettingsPage = () => {
           {THEMES.map((t) => (
             <button
               key={t}
-              className={`
-                group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors
-                ${theme === t ? "bg-base-200" : "hover:bg-base-200/50"}
-              `}
+              className={`cursor-pointer group flex flex-col items-center gap-1.5 p-2 rounded-lg transition-colors
+                ${theme === t ? "bg-base-200" : "hover:bg-base-200/50"}`}
               onClick={() => setTheme(t)}
             >
+              {/* Theme preview with proper data-theme attribute */}
               <div
                 className="relative h-8 w-full rounded-md overflow-hidden"
                 data-theme={t}
@@ -54,8 +62,9 @@ const SettingsPage = () => {
 
         {/* Preview Section */}
         <h3 className="text-lg font-semibold mb-3">Preview</h3>
-        <div className="rounded-xl border border-base-300 overflow-hidden bg-base-100 shadow-lg">
-          <div className="p-4 bg-base-200">
+        <div className="rounded-xl border border-base-300 overflow-hidden shadow-lg">
+          {/* Apply data-theme to the preview wrapper */}
+          <div className="p-4 bg-base-200" data-theme={theme}>
             <div className="max-w-lg mx-auto">
               {/* Mock Chat UI */}
               <div className="bg-base-100 rounded-xl shadow-sm overflow-hidden">
@@ -82,25 +91,19 @@ const SettingsPage = () => {
                       }`}
                     >
                       <div
-                        className={`
-                          max-w-[80%] rounded-xl p-3 shadow-sm
-                          ${
-                            message.isSent
-                              ? "bg-primary text-primary-content"
-                              : "bg-base-200"
-                          }
-                        `}
+                        className={`max-w-[80%] rounded-xl p-3 shadow-sm ${
+                          message.isSent
+                            ? "bg-primary text-primary-content"
+                            : "bg-base-200"
+                        }`}
                       >
                         <p className="text-sm">{message.content}</p>
                         <p
-                          className={`
-                            text-[10px] mt-1.5
-                            ${
-                              message.isSent
-                                ? "text-primary-content/70"
-                                : "text-base-content/70"
-                            }
-                          `}
+                          className={`text-[10px] mt-1.5 ${
+                            message.isSent
+                              ? "text-primary-content/70"
+                              : "text-base-content/70"
+                          }`}
                         >
                           12:00 PM
                         </p>
@@ -132,4 +135,5 @@ const SettingsPage = () => {
     </div>
   );
 };
+
 export default SettingsPage;

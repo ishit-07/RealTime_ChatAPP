@@ -1,12 +1,15 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 
 // this is for the sidebar whom user want to send a message
 export const getUsersForSidebar = async (req, res) => {
   try {
-    const loggedInUserId = req.user._id;
-
+    const loggedInUserId = req.user?._id;
+    if (!loggedInUserId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     // this function is used for filtering because we didn't want to show ourselve on the sidebar
     // select is using because when it get user data we don't have to send the password back to the client
     const filteredUsers = await User.find({
@@ -19,7 +22,6 @@ export const getUsersForSidebar = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const getMessages = async (req, res) => {
   try {
     const { id: userToChatId } = req.params;
@@ -52,25 +54,28 @@ export const sendMessages = async (req, res) => {
     const senderId = req.user._id;
 
     let imageUrl;
-    if(image){
-        // upload image to cloudinary
-        const uploadResponse = await cloudinary.uploader.upload(image);
-        imageUrl = uploadResponse.secure_url;
+    if (image) {
+      // upload image to cloudinary
+      const uploadResponse = await cloudinary.uploader.upload(image);
+      imageUrl = uploadResponse.secure_url;
     }
 
     const newMessage = new Message({
-        senderId,
-        receiverId,
-        text,
-        image: imageUrl
+      senderId,
+      receiverId,
+      text,
+      image: imageUrl,
     });
 
     await newMessage.save();
 
-    // todo: realtime functionality goes here => socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      // we are using to beacuse it is not a group chat it is a private chat so that receiver will get the message
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
 
     res.status(201).json(newMessage);
-
   } catch (error) {
     console.log("Error in sendMessages Controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
