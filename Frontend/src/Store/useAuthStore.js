@@ -3,11 +3,6 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    : import.meta.env.VITE_API_URL.replace("/api", "");
-
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
@@ -21,7 +16,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
       set({ authUser: res.data });
-
       get().connectSocket();
     } catch (error) {
       console.log("Error in checkAuth:", error);
@@ -37,7 +31,6 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.post("/auth/signup", data);
       set({ authUser: res.data });
       toast.success("Account Created Successfully");
-
       get().connectSocket();
     } catch (error) {
       toast.error(error.response.data.message);
@@ -52,7 +45,6 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.post("/auth/login", data);
       set({ authUser: res.data });
       toast.success("Logged In Successfully");
-
       get().connectSocket();
     } catch (error) {
       toast.error(error.response.data.message);
@@ -66,7 +58,6 @@ export const useAuthStore = create((set, get) => ({
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
       toast.success("Logged Out Successfully");
-
       get().disconnectSocket();
     } catch (error) {
       toast.error(error.response.data.message);
@@ -91,11 +82,13 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    // 🔥 FIXED — same origin WebSocket
-    const socket = io("/", { query: { userId: authUser._id } });
-    socket.connect();
+    // 🔥 Same origin WebSocket for local + production
+    const socket = io("/", {
+      withCredentials: true,
+      query: { userId: authUser._id },
+    });
 
-    set({ socket: socket });
+    set({ socket });
 
     socket.on("getOnlineUsers", (userIds) => set({ onlineUsers: userIds }));
   },
