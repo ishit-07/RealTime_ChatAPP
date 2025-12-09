@@ -16,7 +16,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://chatty-delta-wine.vercel.app/"],
+    origin: ["http://localhost:5173", "https://chatty-delta-wine.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
