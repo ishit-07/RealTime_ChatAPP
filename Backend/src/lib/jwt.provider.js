@@ -8,11 +8,11 @@ export const generateToken = (userId, res) => {
 
   // send in cookie
   res.cookie("jwt", token, {
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
+    secure: true, // HTTPS only
     sameSite: "none", // allow cross-site cookies
-    secure: true, // only via https in prod
-    path: "/", // ensure cookie valid for api routes
+    path: "/", // cookie valid for all routes
   });
 
   return token;
