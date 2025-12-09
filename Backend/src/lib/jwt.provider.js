@@ -10,10 +10,10 @@ export const generateToken = (userId, res) => {
   res.cookie("jwt", token, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV !== "development",
+    sameSite: "none", // allow cross-site cookies
+    secure: true, // only via https in prod
+    path: "/", // ensure cookie valid for api routes
   });
 
-  return token
-  
+  return token;
 };
