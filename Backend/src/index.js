@@ -11,15 +11,16 @@ import { app, server } from "./lib/socket.js";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
 app.use(express.json());
 app.use(cookieParser());
 
+// Allow same-origin requests (Frontend served by Backend)
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: true,
     credentials: true,
   })
 );
@@ -29,14 +30,16 @@ app.use("/api/messages", messageRoutes);
 
 // Serve frontend in production
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../Frontend/dist")));
+  const frontendPath = path.join(__dirname, "../Frontend/dist");
+
+  app.use(express.static(frontendPath));
 
   app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../Frontend/dist/index.html"));
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on PORT: ${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
   connectDB();
 });

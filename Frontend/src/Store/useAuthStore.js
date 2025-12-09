@@ -31,7 +31,6 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
-  // this is also for loading
   signUp: async (data) => {
     set({ isSigningUp: true });
     try {
@@ -89,17 +88,18 @@ export const useAuthStore = create((set, get) => ({
   },
 
   connectSocket: () => {
-    // if user is not authenticated so don't create the socket connection
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BASE_URL, { query: { userId: authUser._id } });
+    // 🔥 FIXED — same origin WebSocket
+    const socket = io("/", { query: { userId: authUser._id } });
     socket.connect();
 
     set({ socket: socket });
 
     socket.on("getOnlineUsers", (userIds) => set({ onlineUsers: userIds }));
   },
+
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },
