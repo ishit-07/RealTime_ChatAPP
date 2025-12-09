@@ -97,37 +97,37 @@ export const logOut = async (req, res) => {
   }
 };
 
-
 // this is user for profile update
-export const updatePorfile = async (req,res) => {
+export const updateProfile = async (req, res) => {
+  const userId = req.user?._id;
+  const { fullName, email, profilePic } = req.body;
+
+  if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
   try {
-    const {profilePic} = req.body;
-    const userId = req.user._id;
+    const update = {};
+    if (fullName) update.fullName = fullName;
+    if (email) update.email = email;
+    if (profilePic) update.profilePic = profilePic;
 
-    if(!profilePic){
-      return res.status(400).json({message: "Profile Pic is required"});
-    }
+    const updatedUser = await User.findByIdAndUpdate(userId, update, {
+      new: true,
+    }).select("-password");
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
-
-    // By default, findOneAndUpdate() returns the document as it was before update was applied. If you set new: true, findOneAndUpdate() will instead give you the object after update was applied
-    const updatedUser = await User.findOneAndUpdate(userId, {profilePic: uploadResponse.secure_url}, {new: true});
-
-    res.status(200).json(updatedUser);
-
+    return res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("Error in update Profile", error);
-    res.status(500).json({message: "Internal Server Error"});
+    console.log("Error in updateProfile Controller", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 // this fucntion is used for when the user is authenticated we will show the data to the user (frontend)
 
-export const checkAuth = (req,res) => {
+export const checkAuth = (req, res) => {
   try {
     res.status(200).json(req.user);
   } catch (error) {
-    console.log("Error in CheckAuth controller",error.message);
-    res.status(500).json({message: "Internal Server Error"});
+    console.log("Error in CheckAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
