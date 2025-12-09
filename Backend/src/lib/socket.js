@@ -5,14 +5,13 @@ import express from "express";
 const app = express();
 const server = http.createServer(app);
 
-// Store online users
-const userSocketMap = {}; // { userId: socketId }
+const userSocketMap = {};
 
 export const getReceiverSocketId = (userId) => userSocketMap[userId];
 
-export const io = new Server(server, {
+const io = new Server(server, {
   cors: {
-    origin: true, // Allow same origin
+    origin: true,
     credentials: true,
     methods: ["GET", "POST"],
   },
@@ -33,4 +32,4 @@ io.on("connection", (socket) => {
   });
 });
 
-export { app, server };
+export { io, app, server };
