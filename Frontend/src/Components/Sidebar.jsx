@@ -5,8 +5,14 @@ import SidebarSkeleton from "./skeletons/sidebarskeleton.jsx";
 import { Users } from "lucide-react";
 
 const Sidebar = () => {
-  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } =
-    useChatStore();
+  const {
+    getUsers,
+    users,
+    selectedUser,
+    setSelectedUser,
+    isUsersLoading,
+    getUnreadCount,
+  } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -16,7 +22,7 @@ const Sidebar = () => {
   }, [getUsers]);
 
   const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers.includes(user._id))
+    ? users.filter((user) => onlineUsers.includes(user._id.toString()))
     : users;
 
   if (isUsersLoading) return <SidebarSkeleton />;
@@ -28,7 +34,7 @@ const Sidebar = () => {
           <Users className="size-6" />
           <span className="font-medium hidden lg:block">Contacts</span>
         </div>
-        {/* TODO: Online filter toggle */}
+
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
@@ -51,6 +57,7 @@ const Sidebar = () => {
             key={user._id}
             onClick={() => setSelectedUser(user)}
             className={`
+              relative
               w-full p-3 flex items-center gap-3
               hover:bg-base-300 transition-colors
               ${
@@ -62,25 +69,55 @@ const Sidebar = () => {
           >
             <div className="relative mx-auto lg:mx-0">
               <img
-                src={user.profilePic || "/avatar.png"}
+                src={user.profilePic || "/avatar.webp"}
                 alt={user.name}
                 className="size-12 object-cover rounded-full"
               />
-              {onlineUsers.includes(user._id) && (
+
+              {onlineUsers.includes(user._id.toString()) && (
                 <span
                   className="absolute bottom-0 right-0 size-3 bg-green-500 
                   rounded-full ring-2 ring-zinc-900"
                 />
               )}
+
+              {/* Unread badge on mobile (avatar top-right) */}
+              {getUnreadCount(user._id) > 0 && (
+                <span
+                  className="
+                    absolute -top-1 -right-1
+                    bg-primary text-white text-[10px] font-bold
+                    w-5 h-5 rounded-full flex justify-center items-center
+                    lg:hidden
+                  "
+                >
+                  {getUnreadCount(user._id)}
+                </span>
+              )}
             </div>
 
-            {/* User info - only visible on larger screens */}
+            {/* User info visible only on larger screens */}
             <div className="hidden lg:block text-left min-w-0">
               <div className="font-medium truncate">{user.fullName}</div>
               <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {onlineUsers.includes(user._id.toString())
+                  ? "Online"
+                  : "Offline"}
               </div>
             </div>
+
+            {/* Desktop unread badge */}
+            {getUnreadCount(user._id) > 0 && (
+              <span
+                className="
+                hidden lg:flex
+                ml-auto bg-primary text-white text-xs font-semibold
+                w-6 h-6 rounded-full justify-center items-center
+              "
+              >
+                {getUnreadCount(user._id)}
+              </span>
+            )}
           </button>
         ))}
 
@@ -91,4 +128,5 @@ const Sidebar = () => {
     </aside>
   );
 };
+
 export default Sidebar;

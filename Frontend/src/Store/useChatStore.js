@@ -7,8 +7,13 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   selectedUser: null,
+  unreadCounts: {},
   isUsersLoading: false,
   isMessagesLoading: false,
+
+  getUnreadCount: (userId) => {
+    return get().unreadCounts[userId] || 0;
+  },
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -22,12 +27,19 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  // userId beacause which chat we want to access
   getMessages: async (userId) => {
     set({ isMessagesLoading: true });
     try {
       const res = await axiosInstance.get(`/messages/${userId}`);
       set({ messages: res.data });
+
+      // reset unread for selected chat
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [userId]: 0,
+        },
+      }));
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -49,19 +61,23 @@ export const useChatStore = create((set, get) => ({
   },
 
   subscibeToMessage: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
-
     const socket = useAuthStore.getState().socket;
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+      const { selectedUser, messages, unreadCounts } = get();
 
-      set({
-        messages: [...get().messages, newMessage],
-      });
+      // If message is for currently open chat → add directly
+      if (selectedUser?._id === newMessage.senderId) {
+        set({ messages: [...messages, newMessage] });
+      } else {
+        // Increase unread count for sender
+        set({
+          unreadCounts: {
+            ...unreadCounts,
+            [newMessage.senderId]: (unreadCounts[newMessage.senderId] || 0) + 1,
+          },
+        });
+      }
     });
   },
 
@@ -71,6 +87,18 @@ export const useChatStore = create((set, get) => ({
   },
 
   setSelectedUser: (selectedUser) => {
+    const unreadCounts = get().unreadCounts;
+
+    // reset unread if switching to that chat
+    if (unreadCounts[selectedUser?._id]) {
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [selectedUser._id]: 0,
+        },
+      }));
+    }
+
     set({ selectedUser });
   },
 }));
