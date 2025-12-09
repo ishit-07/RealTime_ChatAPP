@@ -19,6 +19,7 @@ app.use(
     origin: ["http://localhost:5173", "https://chatty-delta-wine.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
