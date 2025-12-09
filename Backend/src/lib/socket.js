@@ -8,11 +8,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://chatty-nu-bay.vercel.app/", "http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://chatty-nu-bay.vercel.app"],
+    credentials: true,
   },
 });
 
-export function getReceiverSocketId(userId){
+export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
 
@@ -34,7 +35,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A user disconnected", socket.id);
     delete userSocketMap[userId];
-    io.emit("getOnlineUsers", Object.keys(userSocketMap)); 
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });
 
