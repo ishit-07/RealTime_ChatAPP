@@ -1,16 +1,10 @@
 import { Server } from "socket.io";
-import http from "http";
-import express from "express";
-
-const app = express();
-const server = http.createServer(app);
-
-const userSocketMap = {};
 
 let io;
+const userSocketMap = {};
 
-export const initSocket = (httpServer) => {
-  io = new Server(httpServer, {
+export const initSocket = (server) => {
+  io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL || "http://localhost:5173",
       credentials: true,
@@ -18,7 +12,7 @@ export const initSocket = (httpServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("A user connected", socket.id);
+    console.log("User connected:", socket.id);
 
     const userId = socket.handshake.query.userId;
     if (userId) userSocketMap[userId] = socket.id;
@@ -26,7 +20,7 @@ export const initSocket = (httpServer) => {
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
     socket.on("disconnect", () => {
-      console.log("User disconnected", socket.id);
+      console.log("User disconnected:", socket.id);
       delete userSocketMap[userId];
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
@@ -35,6 +29,8 @@ export const initSocket = (httpServer) => {
   return io;
 };
 
-export const getReceiverSocketId = (userId) => userSocketMap[userId];
+export const getReceiverSocketId = (receiverId) => {
+  return userSocketMap[receiverId];
+};
 
-export { io, app, server };
+export { io };
