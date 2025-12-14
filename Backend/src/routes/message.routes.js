@@ -8,10 +8,10 @@ import {
 
 const router = express.Router();
 
-// Specific routes FIRST (before dynamic :id routes)
+// Specific routes first (must come before dynamic params)
 router.get("/users", protectRoute, getUsersForSidebar);
 
-// Dynamic routes AFTER specific routes
+// Dynamic routes after specific ones
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMessages);
 
