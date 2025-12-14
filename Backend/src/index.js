@@ -42,10 +42,10 @@ app.get("/api/health", (req, res) => {
 
 // Serve frontend in production
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "..", "..", "Frontend", "dist");
+  const frontendPath = path.join(__dirname, "Frontend", "dist");
   app.use(express.static(frontendPath));
 
-  app.get("/*", (req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
